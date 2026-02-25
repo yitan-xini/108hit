@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>一百零八下</title>
+  <link rel="stylesheet" href="global.css">
+</head>
+<body>
+  <div class="bg-img"></div>
+
+  <main>
+    <h1>欢迎使用高端计数软件</h1>
+
+    <!-- 输入框 -->
+    <input type="number" id="intervalInput" placeholder="请输入间隔秒数" />
+
+    <!-- 按钮 -->
+    <button class="my-button" id="startBtn">开始108下</button>
+
+  </main>
+
+  <hr class="full-width-line" />
+
+  <!-- 音频 -->
+  <audio id="bellSound" src="sound.mp3"></audio>
+
+  <script>
+    const button = document.getElementById("startBtn");
+    const input = document.getElementById("intervalInput");
+    const audio = document.getElementById("bellSound");
+
+    let count = 0;
+    let timer = null;
+
+    button.addEventListener("click", function () {
+
+      const intervalSeconds = parseFloat(input.value);
+
+      if (isNaN(intervalSeconds) || intervalSeconds <= 0) {
+        alert("请输入有效的秒数");
+        return;
+      }
+
+      count = 0;
+
+      clearInterval(timer);
+
+      timer = setInterval(() => {
+
+        audio.currentTime = 0; // 每次从头播放
+        audio.play();
+
+        count++;
+
+        if (count >= 108) {
+          clearInterval(timer);
+          alert("108下已完成");
+        }
+
+      }, intervalSeconds * 1000);
+
+    });
+  </script>
+
+</body>
+</html>
