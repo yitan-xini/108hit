@@ -9,7 +9,7 @@
   <div class="bg-img"></div>
 
   <main>
-    <h1>欢迎使用高端计数软件</h1>
+    <h1>欢迎使用高端计时软件</h1>
 
     <!-- 输入框 -->
     <input type="number" id="intervalInput" placeholder="请输入间隔秒数" />
@@ -33,7 +33,6 @@
     let timer = null;
 
     button.addEventListener("click", function () {
-
       const intervalSeconds = parseFloat(input.value);
 
       if (isNaN(intervalSeconds) || intervalSeconds <= 0) {
@@ -45,20 +44,20 @@
 
       clearInterval(timer);
 
-      timer = setInterval(() => {
+      // 🔓 先播放一次音频，解锁浏览器自动播放权限
+      audio.currentTime = 0;
+      audio.play().catch(error => console.log("首次播放被阻止:", error));
 
+      // 启动 108 下循环
+      timer = setInterval(() => {
         audio.currentTime = 0; // 每次从头播放
-        audio.play().catch(error => {
-  console.log("播放失败:", error);
-});
+        audio.play().catch(error => console.log("播放失败:", error));
 
         count++;
-
         if (count >= 108) {
           clearInterval(timer);
           alert("108下已完成");
         }
-
       }, intervalSeconds * 1000);
 
     });
