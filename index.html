@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>108下终极计数器</title>
+  <title>108下终极计数器（修复版）</title>
   <style>
     body { font-family: sans-serif; text-align: center; margin-top: 50px; }
     input { font-size: 1rem; width: 200px; padding: 5px; }
@@ -21,42 +21,101 @@
   <div id="counter">当前：0 / 108</div>
 
   <script>
-    const button = document.getElementById("startBtn");
-    const input = document.getElementById("intervalInput");
-    const counter = document.getElementById("counter");
+    (function() {
+      const button = document.getElementById("startBtn");
+      const input = document.getElementById("intervalInput");
+      const counter = document.getElementById("counter");
 
-    let count = 0;
-    let timer = null;
+      let count = 0;               // 当前已播放次数
+      let timeoutId = null;        // 用于取消下一个播放的定时器
+      let isActive = false;        // 标记当前是否处于播放序列中
 
-    button.addEventListener("click", function() {
-      const intervalSeconds = parseFloat(input.value);
-      if (isNaN(intervalSeconds) || intervalSeconds <= 0) {
-        alert("请输入有效的秒数");
-        return;
-      }
-
-      count = 0;
-      counter.textContent = `当前：0 / 108`;
-      clearInterval(timer);
-
-      // 🔓 浏览器解锁音频播放（第一次点击）
-      new Audio("sound.wav").play().catch(err => console.log("首次播放失败:", err));
-
-      timer = setInterval(() => {
-        if (count >= 108) {
-          clearInterval(timer);
-          alert("108下已完成！");
+      // 播放下一声的递归函数
+      function playNext(intervalMs) {
+        // 如果已播完108次，或者播放被新的点击中断，则停止
+        if (count >= 108 || !isActive) {
+          if (count >= 108) {
+            alert("108下已完成！");
+          }
           return;
         }
 
-        count++;
+        // 播放当前次数的声音
+        const audio = new Audio("sound.wav");
+        audio.play().catch(err => {
+          console.warn("播放失败:", err);
+          // 即使播放失败，也尝试继续下一声（但应该提示用户）
+          if (isActive) {
+            timeoutId = setTimeout(() => {
+              playNext(intervalMs);
+            }, intervalMs);
+          }
+        });
+
+        // 更新显示
         counter.textContent = `当前：${count} / 108`;
 
-        // 每次新建 Audio 对象播放
-        new Audio("sound.wav").play().catch(err => console.log("播放失败:", err));
+        // 当本次声音播放结束后，等待间隔，再播放下一次
+        audio.onended = () => {
+          if (!isActive) return;                 // 如果已取消，不再继续
+          if (count < 108) {
+            // 计算下一次播放的次数（count先递增，但要在回调内递增）
+            // 注意：这里count是当前已经播放的次数，所以下一声应该是count+1
+            // 我们将在setTimeout中递增count并播放
+            timeoutId = setTimeout(() => {
+              count++;                // 次数增加
+              playNext(intervalMs);   // 播放下一声
+            }, intervalMs);
+          }
+        };
+      }
 
-      }, intervalSeconds * 1000);
-    });
+      // 开始按钮点击事件
+      button.addEventListener("click", function() {
+        const intervalSeconds = parseFloat(input.value);
+        if (isNaN(intervalSeconds) || intervalSeconds <= 0) {
+          alert("请输入有效的秒数");
+          return;
+        }
+
+        // 如果已有播放序列进行中，立即停止（取消后续定时器，并清除活动标志）
+        if (isActive) {
+          isActive = false;           // 让正在进行的播放链停止继续
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+        }
+
+        // 重置计数器
+        count = 0;
+        counter.textContent = `当前：0 / 108`;
+        
+        // 设置为活动状态，开始新的播放序列
+        isActive = true;
+        
+        // 第一次播放由用户手势直接触发（从count=0开始，但playNext会先播放第1声）
+        // 注意：playNext内部count代表即将播放的次数，我们需要先播第1声，所以count应初始为1
+        // 但为了逻辑清晰，我们把第一次播放单独处理，然后递归
+        count = 1;   // 即将播放第一声
+        const intervalMs = intervalSeconds * 1000;
+
+        // 直接播放第一声（利用用户手势）
+        const firstAudio = new Audio("sound.wav");
+        firstAudio.play().catch(err => console.warn("首次播放失败:", err));
+        counter.textContent = `当前：1 / 108`;   // 更新显示
+
+        // 第一声结束后，开始后续递归
+        firstAudio.onended = () => {
+          if (!isActive) return;
+          // 准备播第二声，先设置定时器
+          timeoutId = setTimeout(() => {
+            count++;          // 此时count变为2
+            playNext(intervalMs);
+          }, intervalMs);
+        };
+      });
+    })();
   </script>
 </body>
 </html>
