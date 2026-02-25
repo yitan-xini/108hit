@@ -2,66 +2,60 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>一百零八下</title>
-  <link rel="stylesheet" href="global.css">
+  <title>108下终极计数器</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    input { font-size: 1rem; width: 200px; padding: 5px; }
+    button { font-size: 1rem; padding: 5px 15px; margin-left: 10px; }
+    #counter { font-size: 2rem; margin-top: 20px; color: #d2691e; }
+  </style>
 </head>
 <body>
-  <div class="bg-img"></div>
+  <h1>欢迎使用108下敲钟计数器</h1>
 
-  <main>
-    <h1>欢迎使用高端计时软件</h1>
-
-    <!-- 输入框 -->
+  <div>
     <input type="number" id="intervalInput" placeholder="请输入间隔秒数" />
+    <button id="startBtn">开始108下</button>
+  </div>
 
-    <!-- 按钮 -->
-    <button class="my-button" id="startBtn">开始108下</button>
-
-  </main>
-
-  <hr class="full-width-line" />
-
-  <!-- 音频 -->
-  <audio id="bellSound" src="sound.wav"></audio>
+  <div id="counter">当前：0 / 108</div>
 
   <script>
     const button = document.getElementById("startBtn");
     const input = document.getElementById("intervalInput");
-    const audio = document.getElementById("bellSound");
+    const counter = document.getElementById("counter");
 
     let count = 0;
     let timer = null;
 
-    button.addEventListener("click", function () {
+    button.addEventListener("click", function() {
       const intervalSeconds = parseFloat(input.value);
-
       if (isNaN(intervalSeconds) || intervalSeconds <= 0) {
         alert("请输入有效的秒数");
         return;
       }
 
       count = 0;
-
+      counter.textContent = `当前：0 / 108`;
       clearInterval(timer);
 
-      // 🔓 先播放一次音频，解锁浏览器自动播放权限
-      audio.currentTime = 0;
-      audio.play().catch(error => console.log("首次播放被阻止:", error));
+      // 🔓 首次解锁浏览器自动播放
+      const first = new Audio("sound.wav");
+      first.play().catch(err => console.log("首次播放失败:", err));
 
-      // 启动 108 下循环
       timer = setInterval(() => {
-        audio.currentTime = 0; // 每次从头播放
-        audio.play().catch(error => console.log("播放失败:", error));
-
         count++;
+        counter.textContent = `当前：${count} / 108`;
+
+        const a = new Audio("sound.wav");
+        a.play().catch(err => console.log("播放失败:", err));
+
         if (count >= 108) {
           clearInterval(timer);
-          alert("108下已完成");
+          alert("108下已完成！");
         }
       }, intervalSeconds * 1000);
-
     });
   </script>
-
 </body>
 </html>
