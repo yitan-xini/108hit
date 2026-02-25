@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <h1>欢迎使用108下敲钟计数器</h1>
+  <h1>欢迎使用108下敲钟计数器(v1.0)</h1>
 
   <div>
     <input type="number" id="intervalInput" placeholder="请输入间隔秒数" />
@@ -28,6 +28,13 @@
     let count = 0;
     let timer = null;
 
+    // 预加载音频
+    const sounds = [];
+    for (let i = 0; i < 108; i++) {
+      const audio = new Audio("sound.wav");
+      sounds.push(audio);
+    }
+
     button.addEventListener("click", function() {
       const intervalSeconds = parseFloat(input.value);
       if (isNaN(intervalSeconds) || intervalSeconds <= 0) {
@@ -39,21 +46,24 @@
       counter.textContent = `当前：0 / 108`;
       clearInterval(timer);
 
-      // 🔓 首次解锁浏览器自动播放
-      const first = new Audio("sound.wav");
-      first.play().catch(err => console.log("首次播放失败:", err));
+      // 🔓 浏览器解锁音频播放
+      sounds[0].play().catch(err => console.log("首次播放失败:", err));
 
       timer = setInterval(() => {
-        count++;
-        counter.textContent = `当前：${count} / 108`;
-
-        const a = new Audio("sound.wav");
-        a.play().catch(err => console.log("播放失败:", err));
-
         if (count >= 108) {
           clearInterval(timer);
           alert("108下已完成！");
+          return;
         }
+
+        // 更新计数
+        count++;
+        counter.textContent = `当前：${count} / 108`;
+
+        // 播放对应的音频
+        sounds[count - 1].currentTime = 0;
+        sounds[count - 1].play().catch(err => console.log("播放失败:", err));
+
       }, intervalSeconds * 1000);
     });
   </script>
