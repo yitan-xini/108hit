@@ -48,7 +48,9 @@
       timer = setInterval(() => {
 
         audio.currentTime = 0; // 每次从头播放
-        audio.play();
+        audio.play().catch(error => {
+  console.log("播放失败:", error);
+});
 
         count++;
 
